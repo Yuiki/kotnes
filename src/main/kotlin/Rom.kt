@@ -3,29 +3,24 @@ import ext.readAsHex
 import ext.readAsInt
 import java.io.File
 
-class Rom {
+class Rom(rom: File) {
     val program: ByteArray
-    val character: ByteArray
+    val character: Character
 
-    constructor(rom: File) {
+    init {
         val romData = rom.inputStream()
-
         val magicBytes = romData.readAsHex(4)
         if (magicBytes != MAGIC_BYTES) {
             throw IllegalRomException()
         }
-
         val prgPage = romData.readAsInt(1)
         val chrPage = romData.readAsInt(1)
-
         val prgSize = prgPage * PRG_PAGE_SIZE
         val chrSize = chrPage * CHR_PAGE_SIZE
-
         val readHeaderBytes = 6
         romData.read(HEADER_SIZE - readHeaderBytes)
-
         program = romData.read(prgSize)
-        character = romData.read(chrSize)
+        character = Character(romData.read(chrSize))
     }
 
     companion object {
