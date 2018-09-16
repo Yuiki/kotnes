@@ -1,3 +1,4 @@
+import exception.IllegalRomException
 import ext.read
 import ext.readAsHex
 import ext.readAsInt
