@@ -6,7 +6,7 @@ import java.io.File
 
 class Rom(rom: File) {
     val program: ByteArray
-    val character: Character
+    val character: ByteArray
 
     init {
         val romData = rom.inputStream()
@@ -21,7 +21,7 @@ class Rom(rom: File) {
         val readHeaderBytes = 6
         romData.read(HEADER_SIZE - readHeaderBytes)
         program = romData.read(prgSize)
-        character = Character(romData.read(chrSize))
+        character = romData.read(chrSize)
     }
 
     companion object {

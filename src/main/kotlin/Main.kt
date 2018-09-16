@@ -7,6 +7,8 @@ class Main {
             val classLoader = Main::class.java.classLoader
             val romFile = File(classLoader.getResource("helloworld.nes").file)
             val rom = Rom(romFile)
+            val emulator = Emulator(rom)
+            emulator.start()
         }
     }
 }
