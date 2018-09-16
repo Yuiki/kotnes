@@ -1,5 +1,9 @@
-class Ram {
-    private val ram = IntArray(0x800)
+class Ram(
+        size: Int
+) {
+    private val ram = IntArray(size)
+
+    val size get() = ram.size
 
     fun read(addr: Int) = ram[addr]
 
