@@ -92,12 +92,13 @@ class Ppu(
         val buf = vRamReadBuf
         vRamReadBuf = if (ppuAddr >= 0x2000) {
             val addr = calcVRamAddr()
+            ppuAddr++
             if (addr >= 0x3F00) return vRam.read(addr)
             vRam.read(addr)
         } else {
             bus.read(ppuAddr)
+            ppuAddr++
         }
-        ppuAddr++
         return buf
     }
 
@@ -131,6 +132,7 @@ class Ppu(
         } else {
             bus.write(ppuAddr, data)
         }
+        ppuAddr++
     }
 
     companion object {

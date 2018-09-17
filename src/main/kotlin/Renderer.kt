@@ -10,11 +10,11 @@ class Renderer {
     fun render(data: Ppu.RenderingData) {
         val img = BufferedImage(256, 224, BufferedImage.TYPE_3BYTE_BGR)
         data.background.forEachIndexed { idx, tile ->
-            val x = (idx % 33) * 8
-            val y = (idx / 33) * 8
+            val x = (idx % 32) * 8
+            val y = (idx / 32) * 8
             renderTile(img.graphics, tile, x, y, data.palette)
         }
-        ImageIO.write(img, "png", File("hoge"))
+        ImageIO.write(img, "png", File("rendered.png"))
     }
 
     private fun renderTile(g: Graphics, tile: Ppu.Tile, tileX: Int, tileY: Int, palette: IntArray) {
