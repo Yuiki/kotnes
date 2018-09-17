@@ -116,7 +116,7 @@ class Ppu(
             ppuAddr += data
             isLowerPpuAddr = false
         } else {
-            ppuAddr += data shl 8
+            ppuAddr = data shl 8
             isLowerPpuAddr = true
         }
     }

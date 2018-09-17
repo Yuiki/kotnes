@@ -18,7 +18,7 @@ class Cpu(
     private fun getOperand(mode: AddressingMode) =
             when (mode) {
                 AddressingMode.ACCUMULATOR -> OperandData(0x00)
-                AddressingMode.IMMEDIATE -> OperandData(0x00)
+                AddressingMode.IMMEDIATE -> OperandData(fetch(registers.pc))
                 AddressingMode.ABSOLUTE -> OperandData(fetchWord(registers.pc))
                 AddressingMode.ZERO_PAGE -> OperandData(fetch(registers.pc))
                 AddressingMode.ZERO_PAGE_X -> OperandData(fetch(registers.pc) + registers.x and 0xFF)
@@ -69,9 +69,9 @@ class Cpu(
         return readWord(addr)
     }
 
-    private fun read(addr: Int) = bus.read(addr and 0xFF)
+    private fun read(addr: Int) = bus.read(addr)
 
-    private fun readWord(addr: Int) = read(addr) or read(addr + 1) shl 8
+    private fun readWord(addr: Int) = read(addr) or (read(addr + 1) shl 8)
 
     private fun write(addr: Int, data: Int) {
         bus.write(addr, data)
