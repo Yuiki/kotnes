@@ -1,11 +1,10 @@
 class Emulator(
-        rom: Rom
+        rom: Rom,
+        canvas: Canvas
 ) {
-    private val renderer = Renderer()
-
     private val ppu = Ppu(PpuBus(Ram(0x4000).apply {
         rom.character.forEachIndexed { idx, data -> write(idx, data.toInt()) }
-    }))
+    }), canvas = canvas)
 
     private val cpu = Cpu(CpuBus(
             ppu,
@@ -21,10 +20,7 @@ class Emulator(
     fun start() {
         while (true) {
             val cycle = cpu.run()
-            val renderingData = ppu.run(cycle * 3)
-            if (renderingData != null) {
-                renderer.render(renderingData)
-            }
+            ppu.run(cycle * 3)
         }
     }
 }
