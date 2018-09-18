@@ -23,7 +23,7 @@ class Ppu(
     )
 
 
-    fun run(cycle: Int) {
+    fun run(cycle: Int): Boolean {
         this.cycle += cycle
 
         if (this.cycle >= 341) {
@@ -37,8 +37,11 @@ class Ppu(
             if (line == 262) {
                 line = 0
                 render()
+                return true
             }
         }
+
+        return false
     }
 
     private fun render() {
@@ -46,14 +49,15 @@ class Ppu(
             val tileX = (idx % 32) * 8
             val tileY = (idx / 32) * 8
 
+            val colorData = palette.data
             pairs((0 until 8), (0 until 8)).forEach {
                 val (i, j) = it
                 val paletteIdx = tile.paletteId * 4 + tile.sprite[i][j]
-                val colorId = palette.data[paletteIdx]
+                val colorId = colorData[paletteIdx]
                 val color = COLORS[colorId]
                 val x = tileX + j
                 val y = tileY + i
-                canvas.drawDot(x, y, Color(color[0], color[1], color[2]))
+                canvas.drawDot(x, y, color[0], color[1], color[2])
             }
         }
     }

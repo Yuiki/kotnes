@@ -1,5 +1,3 @@
 interface Canvas {
-    fun drawDot(x: Int, y: Int, color: Color)
+    fun drawDot(x: Int, y: Int, r: Int, g: Int, b: Int)
 }
-
-class Color(val r: Int, val g: Int, val b: Int)

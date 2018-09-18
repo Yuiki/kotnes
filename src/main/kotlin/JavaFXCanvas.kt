@@ -1,13 +1,10 @@
 import javafx.scene.canvas.GraphicsContext
+import javafx.scene.paint.Color
 
 class JavaFXCanvas(
-        private val g: GraphicsContext
+        private val graphics: GraphicsContext
 ) : Canvas {
-    init {
-        g.lineWidth = 1.0
-    }
-
-    override fun drawDot(x: Int, y: Int, color: Color) {
-        g.pixelWriter.setColor(x, y, javafx.scene.paint.Color.rgb(color.r, color.g, color.b))
+    override fun drawDot(x: Int, y: Int, r: Int, g: Int, b: Int) {
+        graphics.pixelWriter.setColor(x, y, Color.rgb(r, g, b))
     }
 }
