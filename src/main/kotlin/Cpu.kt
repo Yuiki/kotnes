@@ -1,4 +1,5 @@
 import exception.UnknownOpcodeException
+import ext.toHex
 import ext.toInt
 
 class Cpu(
@@ -9,7 +10,8 @@ class Cpu(
 
     fun reset() {
         registers = Registers().apply {
-            pc = readWord(0xFFFC)
+            //pc = readWord(0xFFFC)
+            pc = 0xc000
         }
     }
 
@@ -79,11 +81,11 @@ class Cpu(
 
     private fun push(data: Int) {
         write(registers.sp and 0xFF, data)
-        registers.s--
+        registers.sp--
     }
 
     private fun pop(): Int {
-        registers.s++
+        registers.sp++
         return read(registers.sp and 0xFF)
     }
 
@@ -93,15 +95,7 @@ class Cpu(
     }
 
     private fun pushStatus() {
-        val status = registers.n.toInt() shl 7 or
-                registers.v.toInt() shl 6 or
-                registers.r.toInt() shl 5 or
-                registers.b.toInt() shl 4 or
-                registers.d.toInt() shl 3 or
-                registers.i.toInt() shl 2 or
-                registers.z.toInt() shl 1 or
-                registers.c.toInt()
-        push(status)
+        push(registers.status)
     }
 
     private fun popStatus() {
@@ -243,8 +237,9 @@ class Cpu(
             }
             Instruction.JMP -> branch(operand)
             Instruction.JSR -> {
-                push(registers.pc shr 8 and 0xFF)
-                push(registers.pc and 0xFF)
+                val pc = registers.pc - 1
+                push(pc shr 8 and 0xFF)
+                push(pc and 0xFF)
                 branch(operand)
             }
             Instruction.RTS -> {
@@ -265,6 +260,7 @@ class Cpu(
             Instruction.RTI -> {
                 popStatus()
                 popPc()
+                this.registers.r = true
             }
             Instruction.CMP -> {
                 val data = if (mode == AddressingMode.IMMEDIATE) operand else read(operand)
@@ -369,23 +365,32 @@ class Cpu(
                 registers.n = registers.x and 0x80 != 0
                 registers.z = registers.x == 0
             }
-            Instruction.TXS -> registers.s = registers.x
+            Instruction.TXS -> registers.sp = registers.x
             Instruction.PHA -> push(registers.a)
             Instruction.PLA -> {
                 registers.a = pop()
                 registers.n = registers.a and 0x80 != 0
                 registers.z = registers.a == 0
             }
-            Instruction.PHP -> pushStatus()
-            Instruction.PLP -> popStatus()
+            Instruction.PHP -> {
+                registers.b = true
+                pushStatus()
+                registers.b = false
+            }
+            Instruction.PLP -> {
+                popStatus()
+                registers.r = true
+            }
             Instruction.NOP -> {
             }
         }
     }
 
     fun run(): Int {
-        val opcode = opcodes[fetch(registers.pc)] ?: throw UnknownOpcodeException()
+        val pc = registers.pc
+        val opcode = opcodes[fetch(pc)] ?: throw UnknownOpcodeException()
         val (instruction, mode, cycle) = opcode
+        println("${pc.toHex()}\t${instruction.name}\tA:${registers.a.toHex()}\tX:${registers.x.toHex()}\tY:${registers.y.toHex()}\tP:${registers.status.toHex()}\tSP:${registers.sp.toHex()}")
         val (operand, additionalCycle) = getOperand(mode)
         exec(instruction, mode, operand)
         return cycle + additionalCycle + hasBranched.toInt()

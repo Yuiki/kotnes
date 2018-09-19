@@ -97,7 +97,7 @@ val opcodes = mapOf(
         0x70 to Opcode(Instruction.BVS, AddressingMode.RELATIVE, 2),
         0x10 to Opcode(Instruction.BPL, AddressingMode.RELATIVE, 2),
         0x30 to Opcode(Instruction.BMI, AddressingMode.RELATIVE, 2),
-        0x24 to Opcode(Instruction.BIT, AddressingMode.ZERO_PAGE_X, 3),
+        0x24 to Opcode(Instruction.BIT, AddressingMode.ZERO_PAGE, 3),
         0x2C to Opcode(Instruction.BIT, AddressingMode.ABSOLUTE, 4),
         0x4C to Opcode(Instruction.JMP, AddressingMode.ABSOLUTE, 3),
         0x6C to Opcode(Instruction.JMP, AddressingMode.INDIRECT, 4),
