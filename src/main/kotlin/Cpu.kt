@@ -384,6 +384,78 @@ class Cpu(
             }
             Instruction.NOP -> {
             }
+            Instruction.NOPD -> {
+                registers.pc++
+            }
+            Instruction.NOPI -> {
+                registers.pc += 2
+            }
+            Instruction.LAX -> {
+                registers.a = read(operand)
+                registers.x = registers.a
+                registers.n = registers.a and 0x80 != 0
+                registers.z = registers.a == 0
+            }
+            Instruction.SAX -> {
+                val result = registers.a and registers.x
+                write(operand, result)
+            }
+            Instruction.DCP -> {
+                val data = read(operand) - 1 and 0xFF
+                registers.n = ((registers.a - data) and 0x1FF) and 0x80 != 0
+                registers.z = (registers.a - data) and 0x1FF == 0
+                write(operand, data)
+            }
+            Instruction.ISC -> {
+                val data = (read(operand) + 1) and 0xFF
+                val result = (data.inv() and 0xFF) + registers.a + registers.c.toInt()
+                val overflow = ((registers.a xor data) and 0x80 == 0) && ((registers.a xor result) and 0x80) != 0
+                registers.v = overflow
+                registers.c = result > 0xFF
+                registers.n = result and 0x80 != 0
+                registers.z = result == 0
+                registers.a = result and 0xFF
+                write(operand, data)
+            }
+            Instruction.SLO -> {
+                var data = read(operand)
+                registers.c = data and 0x80 != 0
+                data = (data shl 1) and 0xFF
+                registers.a = registers.a or data
+                registers.n = registers.a and 0x80 != 0
+                registers.z = registers.a and 0xFF == 0
+                write(operand, data)
+            }
+            Instruction.RLA -> {
+                val data = (read(operand) shl 1) + registers.c.toInt()
+                registers.c = data and 0x100 != 0
+                registers.a = (data and registers.a) and 0xFF
+                registers.n = registers.a and 0x80 != 0
+                registers.z = registers.a and 0xFF == 0
+                write(operand, data)
+            }
+            Instruction.SRE -> {
+                var data = read(operand)
+                registers.c = data and 0x01 != 0
+                data = data shr 1
+                registers.a = registers.a xor data
+                registers.n = registers.a and 0x80 != 0
+                registers.z = registers.a and 0xFF == 0
+                write(operand, data)
+            }
+            Instruction.RRA -> {
+                var data = read(operand)
+                val carry = data and 0x01 != 0
+                data = (data shr 1) or if (registers.c) 0x80 else 0x00
+                val result = data + registers.a + carry.toInt()
+                val overflow = ((registers.a xor data) and 0x80) == 0 && ((registers.a xor result) and 0x80) != 0
+                registers.v = overflow
+                registers.n = result and 0x80 != 0
+                registers.z = result and 0xFF == 0
+                registers.a = result and 0xFF
+                registers.c = result > 0xFF
+                write(operand, data)
+            }
         }
     }
 
