@@ -43,20 +43,20 @@ class Cpu(
                     OperandData(addr, additionalCycle)
                 }
                 AddressingMode.INDIRECT_X -> {
-                    val baseAddr = fetch(registers.pc) + registers.x and 0xFF
-                    val addr = (read(baseAddr) + read((baseAddr + 1) and 0xFF) shl 8) and 0xFFFF
+                    val baseAddr = (fetch(registers.pc) + registers.x) and 0xFF
+                    val addr = (read(baseAddr) + (read((baseAddr + 1) and 0xFF) shl 8)) and 0xFFFF
                     OperandData(addr)
                 }
                 AddressingMode.INDIRECT_Y -> {
                     val fetchedAddr = fetch(registers.pc)
-                    val baseAddr = read(fetchedAddr) + read((fetchedAddr + 1) and 0xFF) shl 8
+                    val baseAddr = read(fetchedAddr) + (read((fetchedAddr + 1) and 0xFF) shl 8)
                     val addr = baseAddr + registers.y
                     val additionalCycle = (addr and 0xFF00 != baseAddr and 0xFF00).toInt()
                     OperandData(addr and 0xFFFF, additionalCycle)
                 }
                 AddressingMode.INDIRECT -> {
                     val baseAddr = fetchWord(registers.pc)
-                    val addr = (read(baseAddr) + read(baseAddr and 0xFF00 or (baseAddr and 0xFF + 1) and 0xFF) shl 8) and 0xFFFF
+                    val addr = (read(baseAddr) + (read((baseAddr and 0xFF00) or (((baseAddr and 0xFF) + 1) and 0xFF)) shl 8)) and 0xFFFF
                     OperandData(addr)
                 }
             }
@@ -80,13 +80,13 @@ class Cpu(
     }
 
     private fun push(data: Int) {
-        write(registers.sp and 0xFF, data)
+        write(0x100 or (registers.sp and 0xFF), data)
         registers.sp--
     }
 
     private fun pop(): Int {
         registers.sp++
-        return read(registers.sp and 0xFF)
+        return read(0x100 or (registers.sp and 0xFF))
     }
 
     private fun branch(addr: Int) {
@@ -131,9 +131,9 @@ class Cpu(
             Instruction.SBC -> {
                 val data = if (mode == AddressingMode.IMMEDIATE) operand else read(operand)
                 val result: Int = registers.a - data - (!registers.c).toInt()
-                registers.n = result and 0x80 == 0
+                registers.n = result and 0x80 != 0
                 registers.v = registers.a xor data and 0x80 != 0 && registers.a xor result and 0x80 != 0
-                registers.z = result and 0xFF != 0
+                registers.z = result and 0xFF == 0
                 registers.c = result >= 0
                 registers.a = result and 0xFF
             }
@@ -182,9 +182,9 @@ class Cpu(
                     registers.a = result
                 } else {
                     val data = read(operand)
-                    val result = (data shr 1) and 0xFF
+                    val result = data shr 1
                     registers.z = result == 0
-                    registers.c = data and 0x01 != 0
+                    registers.c = registers.a and 0x01 != 0
                     write(operand, result)
                 }
                 registers.n = false
@@ -192,14 +192,14 @@ class Cpu(
             Instruction.ROL -> {
                 if (mode == AddressingMode.ACCUMULATOR) {
                     val result = (registers.a shl 1) and 0xFF or registers.c.toInt()
-                    registers.n = result != 0
+                    registers.n = result and 0x80 != 0
                     registers.z = result == 0
                     registers.c = registers.a and 0x80 != 0
                     registers.a = result
                 } else {
                     val data = read(operand)
                     val result = (data shl 1) and 0xFF or registers.c.toInt()
-                    registers.n = result != 0
+                    registers.n = result and 0x80 != 0
                     registers.z = result == 0
                     registers.c = data and 0x80 != 0
                     write(operand, result)
@@ -207,17 +207,17 @@ class Cpu(
             }
             Instruction.ROR -> {
                 if (mode == AddressingMode.ACCUMULATOR) {
-                    val result = (registers.a shr 1) and 0xFF or if (registers.c) 0x80 else 0x00
-                    registers.n = result != 0
+                    val result = (registers.a shr 1) or if (registers.c) 0x80 else 0x00
+                    registers.n = result and 0x80 != 0
                     registers.z = result == 0
-                    registers.c = registers.a and 0x80 != 0
+                    registers.c = registers.a and 0x01 != 0
                     registers.a = result
                 } else {
                     val data = read(operand)
                     val result = (data shr 1) and 0xFF or if (registers.c) 0x80 else 0x00
-                    registers.n = result != 0
+                    registers.n = result and 0x80 != 0
                     registers.z = result == 0
-                    registers.c = data and 0x80 != 0
+                    registers.c = data and 0x01 != 0
                     write(operand, result)
                 }
             }
@@ -380,6 +380,7 @@ class Cpu(
             Instruction.PLP -> {
                 popStatus()
                 registers.r = true
+                registers.b = false
             }
             Instruction.NOP -> {
             }
