@@ -401,12 +401,12 @@ class Cpu(
                 write(operand, result)
             }
             Instruction.DCP -> {
-                val data = read(operand) - 1 and 0xFF
+                val data = (read(operand) - 1) and 0xFF
                 registers.n = ((registers.a - data) and 0x1FF) and 0x80 != 0
                 registers.z = (registers.a - data) and 0x1FF == 0
                 write(operand, data)
             }
-            Instruction.ISC -> {
+            Instruction.ISB -> {
                 val data = (read(operand) + 1) and 0xFF
                 val result = (data.inv() and 0xFF) + registers.a + registers.c.toInt()
                 val overflow = ((registers.a xor data) and 0x80 == 0) && ((registers.a xor result) and 0x80) != 0
@@ -427,8 +427,8 @@ class Cpu(
                 write(operand, data)
             }
             Instruction.RLA -> {
-                val data = (read(operand) shl 1) + registers.c.toInt()
-                registers.c = data and 0x100 != 0
+                val data = ((read(operand) shl 1) and 0xFF) + registers.c.toInt()
+                registers.c = read(operand) and 0x80 != 0
                 registers.a = (data and registers.a) and 0xFF
                 registers.n = registers.a and 0x80 != 0
                 registers.z = registers.a and 0xFF == 0

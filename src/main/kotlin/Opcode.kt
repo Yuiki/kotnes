@@ -11,7 +11,7 @@ enum class Instruction {
     INY, DEY, CLC, SEC, CLI, SEI, CLD, SED, CLV, LDA,
     LDX, LDY, STA, STX, STY, TAX, TXA, TAY, TYA, TSX,
     TXS, PHA, PLA, PHP, PLP, NOP, NOPD, NOPI, LAX,
-    SAX, DCP, ISC, SLO, RLA, SRE, RRA
+    SAX, DCP, ISB, SLO, RLA, SRE, RRA
 }
 
 enum class AddressingMode {
@@ -224,16 +224,16 @@ val opcodes = mapOf(
         0xC7 to Opcode(Instruction.DCP, AddressingMode.ZERO_PAGE, 5),
         0xCF to Opcode(Instruction.DCP, AddressingMode.ABSOLUTE, 6),
         0xD3 to Opcode(Instruction.DCP, AddressingMode.INDIRECT_Y, 8),
-        0xD7 to Opcode(Instruction.DCP, AddressingMode.IMMEDIATE, 6),
+        0xD7 to Opcode(Instruction.DCP, AddressingMode.ZERO_PAGE_X, 6),
         0xDB to Opcode(Instruction.DCP, AddressingMode.ABSOLUTE_Y, 7),
         0xDF to Opcode(Instruction.DCP, AddressingMode.ABSOLUTE_X, 7),
-        0xE3 to Opcode(Instruction.ISC, AddressingMode.INDIRECT_X, 8),
-        0xE7 to Opcode(Instruction.ISC, AddressingMode.ZERO_PAGE, 5),
-        0xEF to Opcode(Instruction.ISC, AddressingMode.ABSOLUTE, 6),
-        0xF3 to Opcode(Instruction.ISC, AddressingMode.INDIRECT_Y, 8),
-        0xF7 to Opcode(Instruction.ISC, AddressingMode.ZERO_PAGE_X, 6),
-        0xFB to Opcode(Instruction.ISC, AddressingMode.ABSOLUTE_Y, 7),
-        0xFF to Opcode(Instruction.ISC, AddressingMode.ABSOLUTE_X, 7),
+        0xE3 to Opcode(Instruction.ISB, AddressingMode.INDIRECT_X, 8),
+        0xE7 to Opcode(Instruction.ISB, AddressingMode.ZERO_PAGE, 5),
+        0xEF to Opcode(Instruction.ISB, AddressingMode.ABSOLUTE, 6),
+        0xF3 to Opcode(Instruction.ISB, AddressingMode.INDIRECT_Y, 8),
+        0xF7 to Opcode(Instruction.ISB, AddressingMode.ZERO_PAGE_X, 6),
+        0xFB to Opcode(Instruction.ISB, AddressingMode.ABSOLUTE_Y, 7),
+        0xFF to Opcode(Instruction.ISB, AddressingMode.ABSOLUTE_X, 7),
         0x03 to Opcode(Instruction.SLO, AddressingMode.INDIRECT_X, 8),
         0x07 to Opcode(Instruction.SLO, AddressingMode.ZERO_PAGE, 5),
         0x0F to Opcode(Instruction.SLO, AddressingMode.ABSOLUTE, 6),
@@ -249,7 +249,7 @@ val opcodes = mapOf(
         0x3B to Opcode(Instruction.RLA, AddressingMode.ABSOLUTE_Y, 7),
         0x3F to Opcode(Instruction.RLA, AddressingMode.ABSOLUTE_X, 7),
         0x43 to Opcode(Instruction.SRE, AddressingMode.INDIRECT_X, 8),
-        0x47 to Opcode(Instruction.SRE, AddressingMode.ZERO_PAGE_X, 5),
+        0x47 to Opcode(Instruction.SRE, AddressingMode.ZERO_PAGE, 5),
         0x4F to Opcode(Instruction.SRE, AddressingMode.ABSOLUTE, 6),
         0x53 to Opcode(Instruction.SRE, AddressingMode.INDIRECT_Y, 8),
         0x57 to Opcode(Instruction.SRE, AddressingMode.ZERO_PAGE_X, 6),
