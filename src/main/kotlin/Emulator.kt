@@ -7,12 +7,16 @@ class Emulator(
         rom.character.forEachIndexed { idx, data -> write(idx, data.toInt()) }
     }), canvas = canvas)
 
+    private val ram = Ram(0x2048)
+
+    private val dma = Dma(ppu, ram)
+
     private val cpu = Cpu(CpuBus(
             ppu,
             Apu(),
-            Ram(0x2048),
+            ram,
             ProgramRom(rom.program),
-            Dma(),
+            dma,
             Pad(keyEvent)
     )).apply {
         reset()
@@ -20,7 +24,12 @@ class Emulator(
 
     fun start() {
         while (true) {
-            val cycle = cpu.run()
+            var cycle = 0
+            if (dma.isProcessing) {
+                dma.run()
+                cycle = 514
+            }
+            cycle += cpu.run()
             ppu.run(cycle * 3)
         }
     }

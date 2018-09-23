@@ -223,6 +223,11 @@ class Ppu(
         ppuAddr++
     }
 
+    fun transferSprite(idx: Int, data: Int) {
+        val addr = idx + spriteRamAddr
+        spriteRam.write(addr % 0x100, data)
+    }
+
     companion object {
         const val PPUSTATUS = 0x02
         const val OAMADDR = 0x03
