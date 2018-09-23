@@ -1,6 +1,7 @@
 class Emulator(
         rom: Rom,
-        canvas: Canvas
+        canvas: Canvas,
+        keyEvent: KeyEvent
 ) {
     private val ppu = Ppu(PpuBus(Ram(0x4000).apply {
         rom.character.forEachIndexed { idx, data -> write(idx, data.toInt()) }
@@ -12,7 +13,7 @@ class Emulator(
             Ram(0x2048),
             ProgramRom(rom.program),
             Dma(),
-            Pad()
+            Pad(keyEvent)
     )).apply {
         reset()
     }
