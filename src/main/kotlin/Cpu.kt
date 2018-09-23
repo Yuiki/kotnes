@@ -10,8 +10,8 @@ class Cpu(
 
     fun reset() {
         registers = Registers().apply {
-            //pc = readWord(0xFFFC)
-            pc = 0xc000
+            pc = readWord(0xFFFC)
+            //pc = 0xc000
         }
     }
 

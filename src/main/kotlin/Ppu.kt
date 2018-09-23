@@ -1,5 +1,6 @@
 import util.pairs
 import util.twoDim
+import java.util.*
 
 class Ppu(
         private val bus: PpuBus,
@@ -17,14 +18,35 @@ class Ppu(
     private val isVRamAddr get() = ppuAddr >= 0x2000
     private var vRamReadBuf = 0
 
+    private val spriteRam = Ram(0x100)
+    private var spriteRamAddr = 0
+
+    private val registers = IntArray(8)
+    private val sprites = arrayOfNulls<SpriteWithAttributes>(0x1000)
+
     class Tile(
             val sprite: List<IntArray>,
             val paletteId: Int
     )
 
+    class SpriteWithAttributes(
+            val sprites: List<IntArray>,
+            val x: Int,
+            val y: Int,
+            val attrs: Int,
+            val spriteId: Int
+    )
+
+    private fun clearVBlank() {
+        registers[0x02] = registers[0x02] and 0x7F
+    }
 
     fun run(cycle: Int): Boolean {
         this.cycle += cycle
+
+        if (line == 0) {
+            buildSprites()
+        }
 
         if (this.cycle >= 341) {
             this.cycle -= 341
@@ -34,9 +56,16 @@ class Ppu(
                 buildBackground()
             }
 
+            if (line == 241) {
+                registers[2] = registers[2] or 0x80
+            }
+
             if (line == 262) {
+                clearVBlank()
                 line = 0
                 render()
+                background.clear()
+                Arrays.fill(sprites, null)
                 return true
             }
         }
@@ -60,6 +89,25 @@ class Ppu(
                 canvas.drawDot(x, y, color[0], color[1], color[2])
             }
         }
+
+        sprites.forEach { sprite ->
+            if (sprite == null) return@forEach
+            val isVerticalReverse = sprite.attrs and 0x80 != 0
+            val isHorizontalReverse = sprite.attrs and 0x40 != 0
+            val isLowPriority = sprite.attrs and 0x20 != 0
+            val paletteId = sprite.attrs and 0x03
+            pairs((0 until 8), (0 until 8)).forEach {
+                val (i, j) = it
+                val x = sprite.x + if (isHorizontalReverse) 7 - j else j
+                val y = sprite.y + if (isVerticalReverse) 7 - i else i
+                if (sprite.sprites[i][j] != 0) {
+                    val colorId = palette.data[paletteId * 4 + sprite.sprites[i][j] + 0x10]
+                    val color = COLORS[colorId]
+                    val idx = (x + y * 0x100) * 4
+                    canvas.drawDot(x, y, color[0], color[1], color[2])
+                }
+            }
+        }
     }
 
     private fun buildBackground() {
@@ -79,11 +127,24 @@ class Ppu(
         return Tile(sprite, paletteId)
     }
 
-    private fun buildSprite(id: Int) =
+    private fun buildSprites() {
+        val offset = if (registers[0] and 0x08 != 0) 0x1000 else 0x0000
+        for (i in 0 until 100 step 4) {
+            val y = spriteRam.read(i) - 8
+            if (y < 0) return
+            val spriteId = spriteRam.read(i + 1)
+            val attr = spriteRam.read(i + 2)
+            val x = spriteRam.read(i + 3)
+            val sprite = buildSprite(spriteId, offset)
+            sprites[i / 4] = SpriteWithAttributes(sprite, x, y, attr, spriteId)
+        }
+    }
+
+    private fun buildSprite(id: Int, offset: Int = 0) =
             twoDim(8, 8).apply {
                 pairs((0..15), (0..7)).forEach {
                     val (i, j) = it
-                    val ram = bus.read(id * 16 + i)
+                    val ram = bus.read(id * 16 + i + offset)
                     if ((ram and (0x80 shr j)) != 0) {
                         this[i % 8][j] += 0x01 shl (i / 8)
                     }
@@ -100,6 +161,11 @@ class Ppu(
 
     fun read(addr: Int) =
             when (addr) {
+                PPUSTATUS -> {
+                    val data = registers[0x02]
+                    clearVBlank()
+                    data
+                }
                 PPUDATA -> readVRam()
                 else -> 0
             }
@@ -123,8 +189,14 @@ class Ppu(
 
     fun write(addr: Int, data: Int) {
         when (addr) {
+            OAMADDR -> spriteRamAddr = data
+            OAMDATA -> {
+                spriteRam.write(spriteRamAddr, data)
+                spriteRamAddr++
+            }
             PPUADDR -> writePpuAddr(data)
             PPUDATA -> writePpuData(data)
+            else -> this.registers[addr] = data
         }
     }
 
@@ -152,6 +224,9 @@ class Ppu(
     }
 
     companion object {
+        const val PPUSTATUS = 0x02
+        const val OAMADDR = 0x03
+        const val OAMDATA = 0x04
         const val PPUADDR = 0x06
         const val PPUDATA = 0x07
 
