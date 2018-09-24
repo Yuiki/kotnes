@@ -27,7 +27,7 @@ class JavaFXKeyEvent(
                 KeyCode.W -> listener.onKeyUp(Key.UP)
                 KeyCode.S -> listener.onKeyUp(Key.DOWN)
                 KeyCode.A -> listener.onKeyUp(Key.LEFT)
-                KeyCode.F -> listener.onKeyUp(Key.RIGHT)
+                KeyCode.D -> listener.onKeyUp(Key.RIGHT)
                 else -> {}
             }
         }

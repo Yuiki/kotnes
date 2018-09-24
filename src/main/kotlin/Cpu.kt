@@ -3,7 +3,8 @@ import ext.toHex
 import ext.toInt
 
 class Cpu(
-        private val bus: CpuBus
+        private val bus: CpuBus,
+        private val interrupts: Interrupts
 ) {
     private var registers = Registers()
     private var hasBranched = false
@@ -80,13 +81,13 @@ class Cpu(
     }
 
     private fun push(data: Int) {
-        write(0x100 or (registers.sp and 0xFF), data)
+        write(0x100 + (registers.sp and 0xFF), data)
         registers.sp--
     }
 
     private fun pop(): Int {
         registers.sp++
-        return read(0x100 or (registers.sp and 0xFF))
+        return read(0x100 + (registers.sp and 0xFF))
     }
 
     private fun branch(addr: Int) {
@@ -247,15 +248,15 @@ class Cpu(
                 registers.pc++
             }
             Instruction.BRK -> {
-                registers.pc++
-                registers.b = true
-                push(registers.pc shr 8 and 0xFF)
-                push(registers.pc shr 0xFF)
-                pushStatus()
                 if (registers.i) {
-                    registers.pc = readWord(0xFFFE)
+                    return
                 }
+                push((registers.pc shr 8) and 0xFF)
+                push(registers.pc and 0xFF)
+                pushStatus()
                 registers.i = true
+                registers.b = true
+                registers.pc = readWord(0xFFFE)
             }
             Instruction.RTI -> {
                 popStatus()
@@ -459,7 +460,20 @@ class Cpu(
         }
     }
 
+    private fun processNmi() {
+        interrupts.isNmiAsserted = false
+        registers.b = false
+        push((registers.pc shr 8) and 0xFF)
+        push(registers.pc and 0xFF)
+        pushStatus()
+        registers.i = true
+        registers.pc = readWord(0xFFFA)
+    }
+
     fun run(): Int {
+        if (interrupts.isNmiAsserted) {
+            processNmi()
+        }
         val pc = registers.pc
         val opcode = opcodes[fetch(pc)] ?: throw UnknownOpcodeException()
         val (instruction, mode, cycle) = opcode

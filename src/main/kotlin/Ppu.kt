@@ -4,7 +4,8 @@ import java.util.*
 
 class Ppu(
         private val bus: PpuBus,
-        private val canvas: Canvas
+        private val canvas: Canvas,
+        private val interrupts: Interrupts
 ) {
     private val vRam = Ram(0x2000)
     private val palette = PaletteRam()
@@ -23,6 +24,8 @@ class Ppu(
 
     private val registers = IntArray(8)
     private val sprites = arrayOfNulls<SpriteWithAttributes>(0x1000)
+
+    private val isIrqEnabled get() = registers[0] and 0x80 != 0
 
     class Tile(
             val sprite: List<IntArray>,
@@ -58,6 +61,9 @@ class Ppu(
 
             if (line == 241) {
                 registers[2] = registers[2] or 0x80
+                if (isIrqEnabled) {
+                    interrupts.isNmiAsserted = true
+                }
             }
 
             if (line == 262) {
@@ -66,6 +72,7 @@ class Ppu(
                 render()
                 background.clear()
                 Arrays.fill(sprites, null)
+                interrupts.isNmiAsserted = false
                 return true
             }
         }

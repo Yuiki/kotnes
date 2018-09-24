@@ -3,9 +3,11 @@ class Emulator(
         canvas: Canvas,
         keyEvent: KeyEvent
 ) {
+    private val interrupts = Interrupts()
+
     private val ppu = Ppu(PpuBus(Ram(0x4000).apply {
         rom.character.forEachIndexed { idx, data -> write(idx, data.toInt()) }
-    }), canvas = canvas)
+    }), canvas = canvas, interrupts = interrupts)
 
     private val ram = Ram(0x2048)
 
@@ -18,7 +20,7 @@ class Emulator(
             ProgramRom(rom.program),
             dma,
             Pad(keyEvent)
-    )).apply {
+    ), interrupts).apply {
         reset()
     }
 
