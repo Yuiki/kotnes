@@ -27,9 +27,16 @@ class Ppu(
 
     private val isIrqEnabled get() = registers[0] and 0x80 != 0
 
+    private var scrollX = 0
+    private var scrollY = 0
+    private val nameTableId = registers[0x00] and 0x03
+    private val scrollTileX get() = (scrollX + (nameTableId % 2) * 256) / 8
+
     class Tile(
             val sprite: List<IntArray>,
-            val paletteId: Int
+            val paletteId: Int,
+            val scrollX: Int,
+            val scrollY: Int
     )
 
     class SpriteWithAttributes(
@@ -82,6 +89,8 @@ class Ppu(
 
     private fun render() {
         background.forEachIndexed { idx, tile ->
+            val offsetX = tile.scrollX % 8
+            val offsetY = tile.scrollY % 8
             val tileX = (idx % 32) * 8
             val tileY = (idx / 32) * 8
 
@@ -91,8 +100,8 @@ class Ppu(
                 val paletteIdx = tile.paletteId * 4 + tile.sprite[i][j]
                 val colorId = colorData[paletteIdx]
                 val color = COLORS[colorId]
-                val x = tileX + j
-                val y = tileY + i
+                val x = tileX + j - offsetX
+                val y = tileY + i - offsetY
                 canvas.drawDot(x, y, color[0], color[1], color[2])
             }
         }
@@ -119,7 +128,8 @@ class Ppu(
 
     private fun buildBackground() {
         val tileY = line / 8
-        for (tileX in 0 until 32) {
+        for (x in 0 until 32) {
+            val tileX = x + scrollTileX
             background += buildTile(tileX, tileY)
         }
     }
@@ -131,7 +141,7 @@ class Ppu(
         val attr = getAttribute(tileX, tileY)
         val blockId = getBlockId(tileX, tileY)
         val paletteId = attr shr (blockId * 2) and 0x03
-        return Tile(sprite, paletteId)
+        return Tile(sprite, paletteId, scrollX, scrollY)
     }
 
     private fun buildSprites() {
@@ -201,6 +211,7 @@ class Ppu(
                 spriteRam.write(spriteRamAddr, data)
                 spriteRamAddr++
             }
+            PPUSCROLL -> writeScrollData(data)
             PPUADDR -> writePpuAddr(data)
             PPUDATA -> writePpuData(data)
             else -> this.registers[addr] = data
@@ -230,6 +241,10 @@ class Ppu(
         ppuAddr++
     }
 
+    private fun writeScrollData(data: Int) {
+        scrollX = data and 0xFF
+    }
+
     fun transferSprite(idx: Int, data: Int) {
         val addr = idx + spriteRamAddr
         spriteRam.write(addr % 0x100, data)
@@ -239,6 +254,7 @@ class Ppu(
         const val PPUSTATUS = 0x02
         const val OAMADDR = 0x03
         const val OAMDATA = 0x04
+        const val PPUSCROLL = 0x05
         const val PPUADDR = 0x06
         const val PPUDATA = 0x07
 
