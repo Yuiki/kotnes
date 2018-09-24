@@ -1,6 +1,7 @@
 import exception.UnknownOpcodeException
 import ext.toHex
 import ext.toInt
+import java.io.File
 
 class Cpu(
         private val bus: CpuBus,
@@ -8,11 +9,14 @@ class Cpu(
 ) {
     private var registers = Registers()
     private var hasBranched = false
+    private val logFile = File("cpu.log").apply {
+        delete()
+    }
 
     fun reset() {
         registers = Registers().apply {
             pc = readWord(0xFFFC)
-            //pc = 0xc000
+            pc = 0xc000
         }
     }
 
@@ -477,7 +481,9 @@ class Cpu(
         val pc = registers.pc
         val opcode = opcodes[fetch(pc)] ?: throw UnknownOpcodeException()
         val (instruction, mode, cycle) = opcode
-        println("${pc.toHex()}\t${instruction.name}\tA:${registers.a.toHex()}\tX:${registers.x.toHex()}\tY:${registers.y.toHex()}\tP:${registers.status.toHex()}\tSP:${registers.sp.toHex()}")
+        val log = "${pc.toHex(padding = 4)} ${instruction.name} A:${registers.a.toHex()} X:${registers.x.toHex()} Y:${registers.y.toHex()} P:${registers.status.toHex()} SP:${registers.sp.toHex()}"
+        println(log)
+        logFile.appendText(log + "\n")
         val (operand, additionalCycle) = getOperand(mode)
         exec(instruction, mode, operand)
         return cycle + additionalCycle + hasBranched.toInt()
