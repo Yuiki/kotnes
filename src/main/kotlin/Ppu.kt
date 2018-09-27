@@ -32,6 +32,9 @@ class Ppu(
     private val nameTableId = registers[0x00] and 0x03
     private val scrollTileX get() = (scrollX + (nameTableId % 2) * 256) / 8
 
+    private val isBackgroundEnabled get() = registers[0x01] and 0x08 != 0
+    private val isSpriteEnabled get() = registers[0x01] and 0x10 != 0
+
     class Tile(
             val sprite: List<IntArray>,
             val paletteId: Int,
@@ -88,39 +91,43 @@ class Ppu(
     }
 
     private fun render() {
-        background.forEachIndexed { idx, tile ->
-            val offsetX = tile.scrollX % 8
-            val offsetY = tile.scrollY % 8
-            val tileX = (idx % 32) * 8
-            val tileY = (idx / 32) * 8
+        if (isBackgroundEnabled) {
+            background.forEachIndexed { idx, tile ->
+                val offsetX = tile.scrollX % 8
+                val offsetY = tile.scrollY % 8
+                val tileX = (idx % 32) * 8
+                val tileY = (idx / 32) * 8
 
-            val colorData = palette.data
-            pairs((0 until 8), (0 until 8)).forEach {
-                val (i, j) = it
-                val paletteIdx = tile.paletteId * 4 + tile.sprite[i][j]
-                val colorId = colorData[paletteIdx]
-                val color = COLORS[colorId]
-                val x = tileX + j - offsetX
-                val y = tileY + i - offsetY
-                canvas.drawDot(x, y, color[0], color[1], color[2])
+                val colorData = palette.data
+                pairs((0 until 8), (0 until 8)).forEach {
+                    val (i, j) = it
+                    val paletteIdx = tile.paletteId * 4 + tile.sprite[i][j]
+                    val colorId = colorData[paletteIdx]
+                    val color = COLORS[colorId]
+                    val x = tileX + j - offsetX
+                    val y = tileY + i - offsetY
+                    canvas.drawDot(x, y, color[0], color[1], color[2])
+                }
             }
         }
 
-        sprites.forEach { sprite ->
-            if (sprite == null) return@forEach
-            val isVerticalReverse = sprite.attrs and 0x80 != 0
-            val isHorizontalReverse = sprite.attrs and 0x40 != 0
-            val isLowPriority = sprite.attrs and 0x20 != 0
-            val paletteId = sprite.attrs and 0x03
-            pairs((0 until 8), (0 until 8)).forEach {
-                val (i, j) = it
-                val x = sprite.x + if (isHorizontalReverse) 7 - j else j
-                val y = sprite.y + if (isVerticalReverse) 7 - i else i
-                if (sprite.sprites[i][j] != 0) {
-                    val colorId = palette.data[paletteId * 4 + sprite.sprites[i][j] + 0x10]
-                    val color = COLORS[colorId]
-                    val idx = (x + y * 0x100) * 4
-                    canvas.drawDot(x, y, color[0], color[1], color[2])
+        if (isSpriteEnabled) {
+            sprites.forEach { sprite ->
+                if (sprite == null) return@forEach
+                val isVerticalReverse = sprite.attrs and 0x80 != 0
+                val isHorizontalReverse = sprite.attrs and 0x40 != 0
+                val isLowPriority = sprite.attrs and 0x20 != 0
+                val paletteId = sprite.attrs and 0x03
+                pairs((0 until 8), (0 until 8)).forEach {
+                    val (i, j) = it
+                    val x = sprite.x + if (isHorizontalReverse) 7 - j else j
+                    val y = sprite.y + if (isVerticalReverse) 7 - i else i
+                    if (sprite.sprites[i][j] != 0) {
+                        val colorId = palette.data[paletteId * 4 + sprite.sprites[i][j] + 0x10]
+                        val color = COLORS[colorId]
+                        val idx = (x + y * 0x100) * 4
+                        canvas.drawDot(x, y, color[0], color[1], color[2])
+                    }
                 }
             }
         }

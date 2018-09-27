@@ -18,7 +18,7 @@ class PaletteRam {
 
     private fun calcPaletteAddr(addr: Int): Int {
         val paletteAddr = (addr and 0xFF) % 0x20
-        return paletteAddr - if (isSpriteMirror(addr)) 0x10 else 0
+        return paletteAddr - if (isSpriteMirror(paletteAddr)) 0x10 else 0
     }
 
     private fun isSpriteMirror(addr: Int) =
