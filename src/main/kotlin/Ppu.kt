@@ -35,6 +35,8 @@ class Ppu(
     private val isBackgroundEnabled get() = registers[0x01] and 0x08 != 0
     private val isSpriteEnabled get() = registers[0x01] and 0x10 != 0
 
+    private var isHorizontalScroll = true
+
     class Tile(
             val sprite: List<IntArray>,
             val paletteId: Int,
@@ -49,6 +51,19 @@ class Ppu(
             val attrs: Int,
             val spriteId: Int
     )
+
+    private fun hasSpriteHit(): Boolean {
+        val y = spriteRam.read(0)
+        return y == line && isBackgroundEnabled && isSpriteEnabled
+    }
+
+    private fun setSpriteHit() {
+        registers[0x02] = registers[0x02] or 0x40
+    }
+
+    private fun clearSpriteHit() {
+        registers[0x02] = registers[0x02] and 0xBF
+    }
 
     private fun clearVBlank() {
         registers[0x02] = registers[0x02] and 0x7F
@@ -65,6 +80,10 @@ class Ppu(
             this.cycle -= 341
             line++
 
+            if (hasSpriteHit()) {
+                setSpriteHit()
+            }
+
             if (line <= 240 && line % 8 == 0) {
                 buildBackground()
             }
@@ -78,6 +97,7 @@ class Ppu(
 
             if (line == 262) {
                 clearVBlank()
+                clearSpriteHit()
                 line = 0
                 render()
                 background.clear()
@@ -187,6 +207,7 @@ class Ppu(
             when (addr) {
                 PPUSTATUS -> {
                     val data = registers[0x02]
+                    isHorizontalScroll = true
                     clearVBlank()
                     data
                 }
@@ -249,7 +270,12 @@ class Ppu(
     }
 
     private fun writeScrollData(data: Int) {
-        scrollX = data and 0xFF
+        if (isHorizontalScroll) {
+            scrollX = data and 0xFF
+        } else {
+            scrollY = data and 0xFF
+        }
+        isHorizontalScroll = !isHorizontalScroll
     }
 
     fun transferSprite(idx: Int, data: Int) {
