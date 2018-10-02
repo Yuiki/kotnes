@@ -22,7 +22,7 @@ class Main : Application() {
 
         thread {
             val classLoader = Main::class.java.classLoader
-            val romFile = File(classLoader.getResource("giko015.nes").file)
+            val romFile = File(classLoader.getResource("nestest.nes").file)
             val rom = Rom(romFile)
             val emulator = Emulator(rom = rom, canvas = JavaFXCanvas(g), keyEvent = JavaFXKeyEvent(primaryStage.scene))
             emulator.start()
