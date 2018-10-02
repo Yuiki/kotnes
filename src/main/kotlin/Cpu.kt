@@ -481,9 +481,9 @@ class Cpu(
         val pc = registers.pc
         val opcode = opcodes[fetch(pc)] ?: throw UnknownOpcodeException()
         val (instruction, mode, cycle) = opcode
-        val log = "${pc.toHex(padding = 4)} ${instruction.name} A:${registers.a.toHex()} X:${registers.x.toHex()} Y:${registers.y.toHex()} P:${registers.status.toHex()} SP:${registers.sp.toHex()}"
-        println(log)
-        logFile.appendText(log + "\n")
+        //val log = "${pc.toHex(padding = 4)} ${instruction.name} A:${registers.a.toHex()} X:${registers.x.toHex()} Y:${registers.y.toHex()} P:${registers.status.toHex()} SP:${registers.sp.toHex()}"
+        //println(log)
+        //logFile.appendText(log + "\n")
         val (operand, additionalCycle) = getOperand(mode)
         exec(instruction, mode, operand)
         return cycle + additionalCycle + hasBranched.toInt()

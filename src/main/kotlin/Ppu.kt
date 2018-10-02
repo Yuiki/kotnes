@@ -100,6 +100,7 @@ class Ppu(
                 clearSpriteHit()
                 line = 0
                 render()
+                canvas.rendered()
                 background.clear()
                 Arrays.fill(sprites, null)
                 interrupts.isNmiAsserted = false
@@ -111,6 +112,7 @@ class Ppu(
     }
 
     private fun render() {
+        val renderingData = mutableListOf<Canvas.RenderingData>()
         if (isBackgroundEnabled) {
             background.forEachIndexed { idx, tile ->
                 val offsetX = tile.scrollX % 8
@@ -126,7 +128,7 @@ class Ppu(
                     val color = COLORS[colorId]
                     val x = tileX + j - offsetX
                     val y = tileY + i - offsetY
-                    canvas.drawDot(x, y, color[0], color[1], color[2])
+                    renderingData += Canvas.RenderingData(x, y, color[0], color[1], color[2])
                 }
             }
         }
@@ -146,11 +148,13 @@ class Ppu(
                         val colorId = palette.data[paletteId * 4 + sprite.sprites[i][j] + 0x10]
                         val color = COLORS[colorId]
                         val idx = (x + y * 0x100) * 4
-                        canvas.drawDot(x, y, color[0], color[1], color[2])
+                        renderingData += Canvas.RenderingData(x, y, color[0], color[1], color[2])
                     }
                 }
             }
         }
+
+        canvas.bulkDrawDot(renderingData)
     }
 
     private fun buildBackground() {

@@ -25,6 +25,7 @@ class Emulator(
     }
 
     fun start() {
+        val start = System.currentTimeMillis()
         while (true) {
             var cycle = 0
             if (dma.isProcessing) {
@@ -32,7 +33,15 @@ class Emulator(
                 cycle = 514
             }
             cycle += cpu.run()
-            ppu.run(cycle * 3)
+            if (ppu.run(cycle * 3)) {
+                break
+            }
         }
+        val end = System.currentTimeMillis()
+        val sleepTime = 16 /* 60 fps */ - (end - start)
+        if (sleepTime > 0) {
+            Thread.sleep(sleepTime)
+        }
+        start()
     }
 }
