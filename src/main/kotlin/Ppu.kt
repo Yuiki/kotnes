@@ -29,8 +29,10 @@ class Ppu(
 
     private var scrollX = 0
     private var scrollY = 0
-    private val nameTableId = registers[0x00] and 0x03
+    private val nameTableId get() = registers[0x00] and 0x03
     private val scrollTileX get() = (scrollX + (nameTableId % 2) * 256) / 8
+    private val scrollTileY get() = (scrollY + (nameTableId / 2) * 240) / 8
+    private val tileY get() = line / 8 + scrollTileY
 
     private val isBackgroundEnabled get() = registers[0x01] and 0x08 != 0
     private val isSpriteEnabled get() = registers[0x01] and 0x10 != 0
@@ -48,8 +50,7 @@ class Ppu(
             val sprites: List<IntArray>,
             val x: Int,
             val y: Int,
-            val attrs: Int,
-            val spriteId: Int
+            val attrs: Int
     )
 
     private fun hasSpriteHit(): Boolean {
@@ -84,7 +85,7 @@ class Ppu(
                 setSpriteHit()
             }
 
-            if (line <= 240 && line % 8 == 0) {
+            if (line <= 240 && line % 8 == 0 && scrollY <= 240) {
                 buildBackground()
             }
 
@@ -158,21 +159,33 @@ class Ppu(
     }
 
     private fun buildBackground() {
-        val tileY = line / 8
+        val clampedTileY = tileY % 30
+        val tableIdOffset = if ((tileY / 30) % 2 != 0) 2 else 0
         for (x in 0 until 32) {
             val tileX = x + scrollTileX
-            background += buildTile(tileX, tileY)
+            val clampedTileX = tileX % 32
+            val nameTableId = (tileX / 32) % 2 + tableIdOffset
+            val offset = nameTableId * 0x400
+            background += buildTile(clampedTileX, clampedTileY, offset)
         }
     }
 
-    private fun buildTile(tileX: Int, tileY: Int): Tile {
+    private fun buildTile(tileX: Int, tileY: Int, offset: Int): Tile {
         val tileNumber = tileY * 32 + tileX
-        val spriteId = vRam.read(tileNumber)
+        val spriteAddr = calcSpriteAddr(tileNumber + offset)
+        val spriteId = vRam.read(spriteAddr)
         val sprite = buildSprite(spriteId)
-        val attr = getAttribute(tileX, tileY)
+        val attr = getAttribute(tileX, tileY, offset)
         val blockId = getBlockId(tileX, tileY)
         val paletteId = attr shr (blockId * 2) and 0x03
         return Tile(sprite, paletteId, scrollX, scrollY)
+    }
+
+    private fun calcSpriteAddr(addr: Int): Int {
+        if (addr in 0x400 until 0x800 || addr >= 0x0C00) {
+            return addr - 0x400
+        }
+        return addr
     }
 
     private fun buildSprites() {
@@ -184,7 +197,7 @@ class Ppu(
             val attr = spriteRam.read(i + 2)
             val x = spriteRam.read(i + 3)
             val sprite = buildSprite(spriteId, offset)
-            sprites[i / 4] = SpriteWithAttributes(sprite, x, y, attr, spriteId)
+            sprites[i / 4] = SpriteWithAttributes(sprite, x, y, attr)
         }
     }
 
@@ -199,9 +212,10 @@ class Ppu(
                 }
             }
 
-    private fun getAttribute(tileX: Int, tileY: Int): Int {
-        val addr = tileX / 4 + (tileY / 4) * 8 + 0x03C0
-        return vRam.read(addr)
+    private fun getAttribute(tileX: Int, tileY: Int, offset: Int): Int {
+        val addr = tileX / 4 + (tileY / 4) * 8 + 0x03C0 + offset
+        val spriteAddr = calcSpriteAddr(addr)
+        return vRam.read(spriteAddr)
     }
 
     private fun getBlockId(tileX: Int, tileY: Int) =
