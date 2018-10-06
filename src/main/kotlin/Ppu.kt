@@ -34,6 +34,8 @@ class Ppu(
     private val scrollTileY get() = (scrollY + (nameTableId / 2) * 240) / 8
     private val tileY get() = line / 8 + scrollTileY
 
+    private val vRamOffset get() = if (registers[0x00] and 0x04 != 0) 32 else 1
+
     private val isBackgroundEnabled get() = registers[0x01] and 0x08 != 0
     private val isSpriteEnabled get() = registers[0x01] and 0x10 != 0
 
@@ -235,14 +237,15 @@ class Ppu(
 
     private fun readVRam(): Int {
         val buf = vRamReadBuf
-        vRamReadBuf = if (ppuAddr >= 0x2000) {
+        if (ppuAddr >= 0x2000) {
             val addr = calcVRamAddr()
-            ppuAddr++
+            ppuAddr += vRamOffset
             if (addr >= 0x3F00) return vRam.read(addr)
-            vRam.read(addr)
+            vRamReadBuf = vRam.read(addr)
         } else {
             bus.read(ppuAddr)
-            ppuAddr++
+            vRamReadBuf = ppuAddr
+            ppuAddr += vRamOffset
         }
         return buf
     }
