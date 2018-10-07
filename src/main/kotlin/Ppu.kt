@@ -1,6 +1,5 @@
 import util.pairs
 import util.twoDim
-import java.util.*
 
 class Ppu(
         private val bus: PpuBus,
@@ -106,9 +105,7 @@ class Ppu(
                 clearSpriteHit()
                 line = 0
                 render()
-                canvas.rendered()
                 background.clear()
-                Arrays.fill(sprites, null)
                 interrupts.isNmiAsserted = false
                 return true
             }
@@ -119,14 +116,14 @@ class Ppu(
 
     private fun render() {
         val renderingData = mutableListOf<Canvas.RenderingData>()
+        val colorData = palette.data
         if (isBackgroundEnabled) {
             background.forEachIndexed { idx, tile ->
                 val offsetX = tile.scrollX % 8
                 val offsetY = tile.scrollY % 8
-                val tileX = (idx % 32) * 8
-                val tileY = (idx / 32) * 8
+                val tileX = (idx % 33) * 8
+                val tileY = (idx / 33) * 8
 
-                val colorData = palette.data
                 pairs((0 until 8), (0 until 8)).forEach {
                     val (i, j) = it
                     val paletteIdx = tile.paletteId * 4 + tile.sprite[i][j]
@@ -150,10 +147,9 @@ class Ppu(
                     val (i, j) = it
                     val x = sprite.x + if (isHorizontalReverse) 7 - j else j
                     val y = sprite.y + if (isVerticalReverse) sprites.size - 1 - i else i
-                    if (sprite.sprites[i][j] != 0) {
-                        val colorId = palette.data[paletteId * 4 + sprite.sprites[i][j] + 0x10]
+                    if (!(isLowPriority && shouldPixelHide(x, y)) && sprite.sprites[i][j] != 0) {
+                        val colorId = colorData[paletteId * 4 + sprite.sprites[i][j] + 0x10]
                         val color = COLORS[colorId]
-                        val idx = (x + y * 0x100) * 4
                         renderingData += Canvas.RenderingData(x, y, color[0], color[1], color[2])
                     }
                 }
@@ -166,7 +162,7 @@ class Ppu(
     private fun buildBackground() {
         val clampedTileY = tileY % 30
         val tableIdOffset = if ((tileY / 30) % 2 != 0) 2 else 0
-        for (x in 0 until 32) {
+        for (x in 0..32) {
             val tileX = x + scrollTileX
             val clampedTileX = tileX % 32
             val nameTableId = (tileX / 32) % 2 + tableIdOffset
@@ -227,6 +223,15 @@ class Ppu(
                 }
             }
         }
+    }
+
+    private fun shouldPixelHide(x: Int, y: Int): Boolean {
+        val tileX = x / 8
+        val tileY = y / 8
+        val bgIdx = tileY * 33 + tileX
+        if (bgIdx >= background.size) return true
+        val sprite = background[bgIdx].sprite
+        return sprite[y % 8][x % 8] % 4 != 0
     }
 
     private fun getAttribute(tileX: Int, tileY: Int, offset: Int): Int {

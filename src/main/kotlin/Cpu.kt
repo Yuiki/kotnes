@@ -9,14 +9,13 @@ class Cpu(
 ) {
     private var registers = Registers()
     private var hasBranched = false
-    private val logFile = File("cpu.log").apply {
-        //delete()
-    }
+//    private val logFile = File("cpu.log").apply {
+//        delete()
+//    }
 
     fun reset() {
         registers = Registers().apply {
             pc = readWord(0xFFFC)
-            //pc = 0xc000
         }
     }
 

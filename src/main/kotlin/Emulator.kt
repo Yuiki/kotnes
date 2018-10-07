@@ -1,3 +1,5 @@
+import ext.toUnsignedInt
+
 class Emulator(
         rom: Rom,
         canvas: Canvas,
@@ -6,7 +8,7 @@ class Emulator(
     private val interrupts = Interrupts()
 
     private val ppu = Ppu(PpuBus(Ram(0x4000).apply {
-        rom.character.forEachIndexed { idx, data -> write(idx, data.toInt()) }
+        rom.character.forEachIndexed { idx, data -> write(idx, data.toUnsignedInt() ) }
     }), canvas = canvas, interrupts = interrupts, config = Config(rom.isHorizontalMirror))
 
     private val ram = Ram(0x2048)
