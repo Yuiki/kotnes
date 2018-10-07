@@ -42,6 +42,8 @@ class Ppu(
 
     private var isHorizontalScroll = true
 
+    private val isSprite8x8 get() = registers[0x00] and 0x20 == 0
+
     class Tile(
             val sprite: List<IntArray>,
             val paletteId: Int,
@@ -144,10 +146,10 @@ class Ppu(
                 val isHorizontalReverse = sprite.attrs and 0x40 != 0
                 val isLowPriority = sprite.attrs and 0x20 != 0
                 val paletteId = sprite.attrs and 0x03
-                pairs((0 until 8), (0 until 8)).forEach {
+                pairs((0 until sprite.sprites.size), (0 until 8)).forEach {
                     val (i, j) = it
                     val x = sprite.x + if (isHorizontalReverse) 7 - j else j
-                    val y = sprite.y + if (isVerticalReverse) 7 - i else i
+                    val y = sprite.y + if (isVerticalReverse) sprites.size - 1 - i else i
                     if (sprite.sprites[i][j] != 0) {
                         val colorId = palette.data[paletteId * 4 + sprite.sprites[i][j] + 0x10]
                         val color = COLORS[colorId]
@@ -194,28 +196,38 @@ class Ppu(
     }
 
     private fun buildSprites() {
-        val offset = if (registers[0] and 0x08 != 0) 0x1000 else 0x0000
         for (i in 0 until 0x100 step 4) {
             val y = spriteRam.read(i) - 8
             if (y < 0) return
-            val spriteId = spriteRam.read(i + 1)
+            var spriteId = spriteRam.read(i + 1)
             val attr = spriteRam.read(i + 2)
             val x = spriteRam.read(i + 3)
+            var offset: Int
+            if (isSprite8x8) {
+                offset = if (registers[0] and 0x08 != 0) 0x1000 else 0x0000
+            } else {
+                offset = 0x1000 * (spriteId and 0x01)
+                spriteId = spriteId and 0xFE
+            }
             val sprite = buildSprite(spriteId, offset)
             sprites[i / 4] = SpriteWithAttributes(sprite, x, y, attr)
         }
     }
 
-    private fun buildSprite(id: Int, offset: Int = 0) =
-            twoDim(8, 8).apply {
+    private fun buildSprite(id: Int, offset: Int = 0): List<IntArray> {
+        val height = if (isSprite8x8) 1 else 2
+        return twoDim(8, 8 * height).apply {
+            (0 until height).forEach { idx ->
                 pairs((0..15), (0..7)).forEach {
                     val (i, j) = it
-                    val ram = bus.read(id * 16 + i + offset)
+                    val ram = bus.read((id + idx) * 16 + i + offset)
                     if ((ram and (0x80 shr j)) != 0) {
-                        this[i % 8][j] += 0x01 shl (i / 8)
+                        this[idx * 8 + i % 8][j] += 0x01 shl (i / 8)
                     }
                 }
             }
+        }
+    }
 
     private fun getAttribute(tileX: Int, tileY: Int, offset: Int): Int {
         val addr = tileX / 4 + (tileY / 4) * 8 + 0x03C0 + offset
