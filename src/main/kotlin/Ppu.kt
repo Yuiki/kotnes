@@ -258,8 +258,7 @@ class Ppu(
             if (addr >= 0x3F00) return vRam.read(addr)
             vRamReadBuf = vRam.read(addr)
         } else {
-            bus.read(ppuAddr)
-            vRamReadBuf = ppuAddr
+            vRamReadBuf = bus.read(ppuAddr)
             ppuAddr += vRamOffset
         }
         return buf
