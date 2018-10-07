@@ -7,7 +7,7 @@ class Emulator(
 
     private val ppu = Ppu(PpuBus(Ram(0x4000).apply {
         rom.character.forEachIndexed { idx, data -> write(idx, data.toInt()) }
-    }), canvas = canvas, interrupts = interrupts)
+    }), canvas = canvas, interrupts = interrupts, config = Config(rom.isHorizontalMirror))
 
     private val ram = Ram(0x2048)
 

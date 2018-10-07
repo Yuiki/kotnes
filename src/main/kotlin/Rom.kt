@@ -7,6 +7,7 @@ import java.io.File
 class Rom(rom: File) {
     val program: ByteArray
     val character: ByteArray
+    val isHorizontalMirror: Boolean
 
     init {
         val romData = rom.inputStream()
@@ -18,7 +19,8 @@ class Rom(rom: File) {
         val chrPage = romData.readAsInt(1)
         val prgSize = prgPage * PRG_PAGE_SIZE
         val chrSize = chrPage * CHR_PAGE_SIZE
-        val readHeaderBytes = 6
+        isHorizontalMirror = romData.readAsInt(1) and 0x01 == 0
+        val readHeaderBytes = 7
         romData.read(HEADER_SIZE - readHeaderBytes)
         program = romData.read(prgSize)
         character = romData.read(chrSize)

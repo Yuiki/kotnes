@@ -5,7 +5,8 @@ import java.util.*
 class Ppu(
         private val bus: PpuBus,
         private val canvas: Canvas,
-        private val interrupts: Interrupts
+        private val interrupts: Interrupts,
+        private val config: Config
 ) {
     private val vRam = Ram(0x2000)
     private val palette = PaletteRam()
@@ -176,7 +177,8 @@ class Ppu(
         val tileNumber = tileY * 32 + tileX
         val spriteAddr = calcSpriteAddr(tileNumber + offset)
         val spriteId = vRam.read(spriteAddr)
-        val sprite = buildSprite(spriteId)
+        val bgTableOffset = if (registers[0] and 0x10 != 0) 0x1000 else 0x0000
+        val sprite = buildSprite(spriteId, bgTableOffset)
         val attr = getAttribute(tileX, tileY, offset)
         val blockId = getBlockId(tileX, tileY)
         val paletteId = attr shr (blockId * 2) and 0x03
@@ -184,6 +186,7 @@ class Ppu(
     }
 
     private fun calcSpriteAddr(addr: Int): Int {
+        if (!config.isHorizontalMirror) return addr
         if (addr in 0x400 until 0x800 || addr >= 0x0C00) {
             return addr - 0x400
         }
@@ -192,7 +195,7 @@ class Ppu(
 
     private fun buildSprites() {
         val offset = if (registers[0] and 0x08 != 0) 0x1000 else 0x0000
-        for (i in 0 until 100 step 4) {
+        for (i in 0 until 0x100 step 4) {
             val y = spriteRam.read(i) - 8
             if (y < 0) return
             val spriteId = spriteRam.read(i + 1)
@@ -287,7 +290,7 @@ class Ppu(
         } else {
             bus.write(ppuAddr, data)
         }
-        ppuAddr++
+        ppuAddr += vRamOffset
     }
 
     private fun writeScrollData(data: Int) {

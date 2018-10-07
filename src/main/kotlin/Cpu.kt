@@ -10,7 +10,7 @@ class Cpu(
     private var registers = Registers()
     private var hasBranched = false
     private val logFile = File("cpu.log").apply {
-        delete()
+        //delete()
     }
 
     fun reset() {
