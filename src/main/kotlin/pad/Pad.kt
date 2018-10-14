@@ -1,3 +1,5 @@
+package pad
+
 import ext.toInt
 
 class Pad(
@@ -23,9 +25,9 @@ class Pad(
     fun read() = registers[index++].toInt()
 
     fun write(data: Int) {
-        if (data and 0x01 != 0) {
+        if (data != 0) {
             isSet = true
-        } else if (isSet && data and 0x01 == 0) {
+        } else if (isSet && data == 0) {
             isSet = false
             index = 0
             buffer.forEachIndexed { idx, b -> registers[idx] = b }

@@ -1,3 +1,5 @@
+import pad.Pad
+
 class CpuBus(
         private val ppu: Ppu,
         private val apu: Apu,

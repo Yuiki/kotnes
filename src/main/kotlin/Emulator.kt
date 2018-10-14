@@ -1,4 +1,6 @@
 import ext.toUnsignedInt
+import pad.KeyEvent
+import pad.Pad
 
 class Emulator(
         rom: Rom,

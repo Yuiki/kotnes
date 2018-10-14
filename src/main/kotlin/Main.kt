@@ -3,6 +3,7 @@ import javafx.scene.Group
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.stage.Stage
+import pad.JavaFXKeyEvent
 import java.io.File
 import kotlin.concurrent.thread
 

@@ -1,3 +1,5 @@
+package pad
+
 interface KeyEvent {
     fun listen(listener: KeyEventListener)
 }

@@ -1,9 +1,11 @@
+package pad
+
 import javafx.scene.Scene
 import javafx.scene.input.KeyCode
 
 class JavaFXKeyEvent(
         private val scene: Scene
-): KeyEvent {
+) : KeyEvent {
     override fun listen(listener: KeyEventListener) {
         scene.setOnKeyPressed {
             when (it.code) {
@@ -15,7 +17,8 @@ class JavaFXKeyEvent(
                 KeyCode.S -> listener.onKeyDown(Key.DOWN)
                 KeyCode.A -> listener.onKeyDown(Key.LEFT)
                 KeyCode.D -> listener.onKeyDown(Key.RIGHT)
-                else -> {}
+                else -> {
+                }
             }
         }
         scene.setOnKeyReleased {
@@ -28,7 +31,8 @@ class JavaFXKeyEvent(
                 KeyCode.S -> listener.onKeyUp(Key.DOWN)
                 KeyCode.A -> listener.onKeyUp(Key.LEFT)
                 KeyCode.D -> listener.onKeyUp(Key.RIGHT)
-                else -> {}
+                else -> {
+                }
             }
         }
     }
