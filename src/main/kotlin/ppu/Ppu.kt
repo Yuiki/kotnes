@@ -1,11 +1,15 @@
+package ppu
+
+import interrupts.Interrupts
+import ram.Ram
 import util.pairs
 import util.twoDim
 
 class Ppu(
-        private val bus: PpuBus,
+        private val chrRam: Ram,
         private val canvas: Canvas,
         private val interrupts: Interrupts,
-        private val config: Config
+        private val isHorizontalMirror: Boolean
 ) {
     private val vRam = Ram(0x2000)
     private val palette = PaletteRam()
@@ -156,7 +160,7 @@ class Ppu(
             }
         }
 
-        canvas.bulkDrawDot(renderingData)
+        canvas.bulkDrawDots(renderingData)
     }
 
     private fun buildBackground() {
@@ -184,7 +188,7 @@ class Ppu(
     }
 
     private fun calcSpriteAddr(addr: Int): Int {
-        if (!config.isHorizontalMirror) return addr
+        if (!isHorizontalMirror) return addr
         if (addr in 0x400 until 0x800 || addr >= 0x0C00) {
             return addr - 0x400
         }
@@ -216,7 +220,7 @@ class Ppu(
             (0 until height).forEach { idx ->
                 pairs((0..15), (0..7)).forEach {
                     val (i, j) = it
-                    val ram = bus.read((id + idx) * 16 + i + offset)
+                    val ram = chrRam.read((id + idx) * 16 + i + offset)
                     if ((ram and (0x80 shr j)) != 0) {
                         this[idx * 8 + i % 8][j] += 0x01 shl (i / 8)
                     }
@@ -263,14 +267,13 @@ class Ppu(
             if (addr >= 0x3F00) return vRam.read(addr)
             vRamReadBuf = vRam.read(addr)
         } else {
-            vRamReadBuf = bus.read(ppuAddr)
+            vRamReadBuf = chrRam.read(ppuAddr)
             ppuAddr += vRamOffset
         }
         return buf
     }
 
-    private fun calcVRamAddr()
-            = ppuAddr - if (ppuAddr in 0x3000 until 0x3f00) 0x3000 else 0x2000
+    private fun calcVRamAddr() = ppuAddr - if (ppuAddr in 0x3000 until 0x3f00) 0x3000 else 0x2000
 
     fun write(addr: Int, data: Int) {
         when (addr) {
@@ -304,7 +307,7 @@ class Ppu(
                 vRam.write(calcVRamAddr(), data)
             }
         } else {
-            bus.write(ppuAddr, data)
+            chrRam.write(ppuAddr, data)
         }
         ppuAddr += vRamOffset
     }

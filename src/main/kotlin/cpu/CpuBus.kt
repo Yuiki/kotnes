@@ -1,10 +1,17 @@
+package cpu
+
+import ppu.Ppu
+import apu.Apu
+import cartridge.Rom
+import dma.Dma
 import pad.Pad
+import ram.Ram
 
 class CpuBus(
         private val ppu: Ppu,
         private val apu: Apu,
         private val ram: Ram,
-        private val programRom: ProgramRom,
+        private val rom: Rom,
         private val dma: Dma,
         private val pad: Pad
 ) {
@@ -14,10 +21,10 @@ class CpuBus(
                 addr < 0x4000 -> ppu.read((addr - 0x2000) % 8)
                 addr == 0x4016 -> pad.read()
                 addr >= 0xC000 -> {
-                    val offset = - if (programRom.size <= 0x4000) 0xC000 else 0x8000
-                    programRom.read(addr + offset)
+                    val offset = -if (rom.size <= 0x4000) 0xC000 else 0x8000
+                    rom.read(addr + offset)
                 }
-                addr >= 0x8000 -> programRom.read(addr - 0x8000)
+                addr >= 0x8000 -> rom.read(addr - 0x8000)
                 else -> 0
             }
 

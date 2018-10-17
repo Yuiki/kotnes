@@ -1,16 +1,21 @@
+package ppu
+
+import ram.Ram
+
 class PaletteRam {
     private val ram = Ram(0x20)
 
-    val data get() =
-        (0 until ram.size).map {
-            ram.read(it)
-        }.mapIndexed { idx, data ->
-            return@mapIndexed when {
-                isSpriteMirror(idx) -> ram.read(idx - 0x10)
-                isBackgroundMirror(idx) -> ram.read(0x00)
-                else -> data
-            }
-        }.toIntArray()
+    val data
+        get() =
+            (0 until ram.size).map {
+                ram.read(it)
+            }.mapIndexed { idx, data ->
+                return@mapIndexed when {
+                    isSpriteMirror(idx) -> ram.read(idx - 0x10)
+                    isBackgroundMirror(idx) -> ram.read(0x00)
+                    else -> data
+                }
+            }.toIntArray()
 
     fun write(addr: Int, data: Int) {
         ram.write(calcPaletteAddr(addr), data)

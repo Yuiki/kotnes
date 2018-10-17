@@ -1,20 +1,22 @@
+package cpu
+
 import exception.UnknownOpcodeException
-import ext.toHex
 import ext.toInt
-import java.io.File
+import interrupts.Interrupts
 
 class Cpu(
         private val bus: CpuBus,
         private val interrupts: Interrupts
 ) {
-    private var registers = Registers()
+    private var registers = CpuRegister()
     private var hasBranched = false
-//    private val logFile = File("cpu.log").apply {
-//        delete()
-//    }
 
-    fun reset() {
-        registers = Registers().apply {
+    init {
+        reset()
+    }
+
+    private fun reset() {
+        registers = CpuRegister().apply {
             pc = readWord(0xFFFC)
         }
     }
@@ -480,9 +482,6 @@ class Cpu(
         val pc = registers.pc
         val opcode = opcodes[fetch(pc)] ?: throw UnknownOpcodeException()
         val (instruction, mode, cycle) = opcode
-        //val log = "${pc.toHex(padding = 4)} ${instruction.name} A:${registers.a.toHex()} X:${registers.x.toHex()} Y:${registers.y.toHex()} P:${registers.status.toHex()} SP:${registers.sp.toHex()}"
-        //println(log)
-        //logFile.appendText(log + "\n")
         val (operand, additionalCycle) = getOperand(mode)
         exec(instruction, mode, operand)
         return cycle + additionalCycle + hasBranched.toInt()

@@ -1,3 +1,8 @@
+package dma
+
+import ppu.Ppu
+import ram.Ram
+
 class Dma(
         private val ppu: Ppu,
         private val ram: Ram

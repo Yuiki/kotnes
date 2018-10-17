@@ -1,3 +1,5 @@
+package cpu
+
 data class Opcode(
         val instruction: Instruction,
         val mode: AddressingMode,
