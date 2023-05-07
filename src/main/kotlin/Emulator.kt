@@ -74,21 +74,20 @@ class Emulator(
     private var sleepMargin = 0L
 
     fun start() {
-        val frameStartNs = System.nanoTime()
-        stepFrame()
-        val frameEndNs = System.nanoTime()
+        while (true) {
+            val frameStartNs = System.nanoTime()
+            stepFrame()
+            val frameEndNs = System.nanoTime()
 
-        val sleepTimeNs = (FRAME_NS - (frameEndNs - frameStartNs)) + sleepMargin
-        val sleepTimeMs = sleepTimeNs / 1000_000
-        val sleepStartNs = System.nanoTime()
-        if (sleepTimeMs > 0) {
-            Thread.sleep(sleepTimeMs)
+            val sleepTimeNs = (FRAME_NS - (frameEndNs - frameStartNs)) + sleepMargin
+            val sleepTimeMs = sleepTimeNs / 1000_000
+            val sleepStartNs = System.nanoTime()
+            if (sleepTimeMs > 0) {
+                Thread.sleep(sleepTimeMs)
+            }
+            val sleepEnd = System.nanoTime()
+            sleepMargin = sleepTimeNs - (sleepEnd - sleepStartNs)
         }
-        val sleepEnd = System.nanoTime()
-        sleepMargin = sleepTimeNs - (sleepEnd - sleepStartNs)
-
-        // TODO: fix stack overflow
-        start()
     }
 
     private fun stepFrame() {
