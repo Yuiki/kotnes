@@ -4,8 +4,8 @@ import ppu.Ppu
 import ram.Ram
 
 class Dma(
-        private val ppu: Ppu,
-        private val ram: Ram
+    private val ppu: Ppu,
+    private val ram: Ram,
 ) {
     var isProcessing = false
     var ramAddr = 0

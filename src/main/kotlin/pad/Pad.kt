@@ -3,7 +3,7 @@ package pad
 import ext.toInt
 
 class Pad(
-        keyEvent: KeyEvent
+    keyEvent: KeyEvent,
 ) {
     private var isSet = false
     private var index = 0
@@ -22,6 +22,7 @@ class Pad(
         })
     }
 
+    // TODO: fix a bug (use nestest ROM)
     fun read() = registers[index++].toInt()
 
     fun write(data: Int) {

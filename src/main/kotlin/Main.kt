@@ -29,9 +29,9 @@ class Main : Application() {
             val g = canvas.graphicsContext2D
 
             Emulator(
-                    cartridge = rom,
-                    canvas = JavaFXCanvas(g),
-                    keyEvent = JavaFXKeyEvent(primaryStage.scene)
+                cartridge = rom,
+                canvas = JavaFXCanvas(g),
+                keyEvent = JavaFXKeyEvent(primaryStage.scene)
             ).start()
         }
     }

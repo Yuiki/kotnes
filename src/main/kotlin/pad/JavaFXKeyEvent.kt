@@ -4,7 +4,7 @@ import javafx.scene.Scene
 import javafx.scene.input.KeyCode
 
 class JavaFXKeyEvent(
-        private val scene: Scene
+    private val scene: Scene,
 ) : KeyEvent {
     override fun listen(listener: KeyEventListener) {
         scene.setOnKeyPressed {

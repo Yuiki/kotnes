@@ -1,7 +1,7 @@
 package ram
 
 class Ram(
-        size: Int
+    size: Int,
 ) {
     private val data = IntArray(size)
 

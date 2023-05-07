@@ -9,10 +9,10 @@ interface Canvas {
     fun rendered()
 
     class RenderingData(
-            val x: Int,
-            val y: Int,
-            val r: Int,
-            val g: Int,
-            val b: Int
+        val x: Int,
+        val y: Int,
+        val r: Int,
+        val g: Int,
+        val b: Int,
     )
 }

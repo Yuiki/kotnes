@@ -4,7 +4,7 @@ import javafx.application.Platform
 import javafx.scene.canvas.GraphicsContext
 
 class JavaFXCanvas(
-        graphics: GraphicsContext
+    graphics: GraphicsContext,
 ) : Canvas {
     private val pw = graphics.pixelWriter
 

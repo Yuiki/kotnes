@@ -4,7 +4,6 @@ import ext.read
 import ext.readAsHex
 import ext.readAsInt
 import java.io.File
-import java.lang.IllegalArgumentException
 
 class Cartridge(rom: File) {
     val program: ByteArray

@@ -3,7 +3,7 @@ package cartridge
 import ext.toUnsignedInt
 
 class Rom(
-        private val data: ByteArray
+    private val data: ByteArray,
 ) {
     val size get() = data.size
 

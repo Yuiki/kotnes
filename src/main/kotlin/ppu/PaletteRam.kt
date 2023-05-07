@@ -27,8 +27,8 @@ class PaletteRam {
     }
 
     private fun isSpriteMirror(addr: Int) =
-            addr == 0x10 || addr == 0x14 || addr == 0x18 || addr == 0x1C
+        addr == 0x10 || addr == 0x14 || addr == 0x18 || addr == 0x1C
 
     private fun isBackgroundMirror(addr: Int) =
-            addr == 0x04 || addr == 0x08 || addr == 0x0c
+        addr == 0x04 || addr == 0x08 || addr == 0x0c
 }
