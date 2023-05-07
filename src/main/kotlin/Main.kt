@@ -42,6 +42,6 @@ class Main : Application() {
         const val WIDTH = 256.0
         const val HEIGHT = 224.0
 
-        const val ROM_NAME = "mario.nes"
+        const val ROM_NAME = "test.nes"
     }
 }
