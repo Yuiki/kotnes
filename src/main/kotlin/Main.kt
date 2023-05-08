@@ -39,8 +39,8 @@ class Main : Application() {
     companion object {
         const val TITLE = "kotnes"
 
-        const val WIDTH = 256.0
-        const val HEIGHT = 224.0
+        const val WIDTH = 256.0 * 2
+        const val HEIGHT = 224.0 * 2
 
         const val ROM_NAME = "test.nes"
     }
