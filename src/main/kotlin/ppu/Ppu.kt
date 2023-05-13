@@ -150,7 +150,7 @@ class Ppu(
                 pairs((0 until sprite.sprites.size), (0 until 8)).forEach {
                     val (i, j) = it
                     val x = sprite.x + if (isHorizontalReverse) 7 - j else j
-                    val y = sprite.y + if (isVerticalReverse) sprites.size - 1 - i else i
+                    val y = sprite.y + if (isVerticalReverse) sprite.sprites.size - 1 - i else i
                     if (!(isLowPriority && shouldPixelHide(x, y)) && sprite.sprites[i][j] != 0) {
                         val colorId = colorData[paletteId * 4 + sprite.sprites[i][j] + 0x10]
                         val color = COLORS[colorId]
