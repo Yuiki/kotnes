@@ -33,7 +33,7 @@ class Ppu(
 
     private var scrollX = 0
     private var scrollY = 0
-    private val nameTableId get() = registers[0x00] and 0x03
+    private var nameTableId = 0
     private val scrollTileX get() = (scrollX + (nameTableId % 2) * 256) / 8
     private val scrollTileY get() = (scrollY + (nameTableId / 2) * 240) / 8
     private val tileY get() = line / 8 + scrollTileY
@@ -287,7 +287,12 @@ class Ppu(
             PPUSCROLL -> writeScrollData(data)
             PPUADDR -> writePpuAddr(data)
             PPUDATA -> writePpuData(data)
-            else -> this.registers[addr] = data
+            else -> {
+                if (addr == 0) {
+                    nameTableId = data and 0x03
+                }
+                this.registers[addr] = data
+            }
         }
     }
 
@@ -295,6 +300,7 @@ class Ppu(
         if (isLowerPpuAddr) {
             ppuAddr += data
             isLowerPpuAddr = false
+            nameTableId = (ppuAddr and 0b110000000000) shr 10
         } else {
             ppuAddr = data shl 8
             isLowerPpuAddr = true
