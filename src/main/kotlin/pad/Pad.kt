@@ -1,5 +1,6 @@
 package pad
 
+import apu.isSetUByte
 import ext.toInt
 
 class Pad(
@@ -26,9 +27,10 @@ class Pad(
     fun read() = registers[index++].toInt()
 
     fun write(data: Int) {
-        if (data != 0) {
+        val strobe = data.toUByte().isSetUByte(0u)
+        if (strobe) {
             isSet = true
-        } else if (isSet && data == 0) {
+        } else if (isSet && !strobe) {
             isSet = false
             index = 0
             buffer.forEachIndexed { idx, b -> registers[idx] = b }
