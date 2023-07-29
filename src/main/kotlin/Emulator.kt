@@ -19,7 +19,7 @@ class Emulator(
     keyEvent: KeyEvent,
 ) {
     private val interrupts = Interrupts()
-    private val chrRam = Ram(0x4000).apply {
+    private val chrRam = Ram(cartridge.character.size).apply {
         cartridge.character.forEachIndexed { idx, data ->
             write(idx, data.toUnsignedInt())
         }
