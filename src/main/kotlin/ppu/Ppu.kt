@@ -87,24 +87,28 @@ class Ppu(
 
         if (this.cycle >= 341) {
             this.cycle -= 341
-            line++
+            val currentLine = line++
 
             if (hasSpriteHit()) {
                 setSpriteHit()
             }
 
-            if (line <= 240 && line % 8 == 0 && scrollY <= 240) {
+            if (currentLine <= 239 && line % 8 == 0 && scrollY <= 240) {
                 buildBackground()
             }
 
-            if (line == 241) {
+            if (currentLine == 240) { // Post-render scanline
+                // idle
+            }
+
+            if (currentLine == 241) {
                 registers[2] = registers[2] or 0x80
                 if (isIrqEnabled) {
                     interrupts.isNmiAsserted = true
                 }
             }
 
-            if (line == 262) {
+            if (currentLine == 261) { // Pre-render scanline
                 clearVBlank()
                 clearSpriteHit()
                 line = 0
