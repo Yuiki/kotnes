@@ -515,6 +515,10 @@ class Cpu(
                 registers.c = result > 0xFF
                 write(operand, data)
             }
+
+            Instruction.HLT -> {
+                // no-op
+            }
         }
         return additionalCycle
     }

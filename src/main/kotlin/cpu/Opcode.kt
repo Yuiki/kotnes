@@ -1,9 +1,9 @@
 package cpu
 
 data class Opcode(
-        val instruction: Instruction,
-        val mode: AddressingMode,
-        val cycle: Int,
+    val instruction: Instruction,
+    val mode: AddressingMode,
+    val cycle: Int,
 )
 
 enum class Instruction {
@@ -13,7 +13,8 @@ enum class Instruction {
     INY, DEY, CLC, SEC, CLI, SEI, CLD, SED, CLV, LDA,
     LDX, LDY, STA, STX, STY, TAX, TXA, TAY, TYA, TSX,
     TXS, PHA, PLA, PHP, PLP, NOP, NOPD, NOPI, LAX,
-    SAX, DCP, ISB, SLO, RLA, SRE, RRA
+    SAX, DCP, ISB, SLO, RLA, SRE, RRA,
+    HLT,
 }
 
 enum class AddressingMode {
@@ -213,6 +214,7 @@ val opcodes = mapOf(
     0xFC to Opcode(Instruction.NOPI, AddressingMode.IMPLIED, 4),
     0xA3 to Opcode(Instruction.LAX, AddressingMode.INDIRECT_X, 6),
     0xA7 to Opcode(Instruction.LAX, AddressingMode.ZERO_PAGE, 3),
+    0xAB to Opcode(Instruction.LAX, AddressingMode.IMMEDIATE, 2),
     0xAF to Opcode(Instruction.LAX, AddressingMode.ABSOLUTE, 4),
     0xB3 to Opcode(Instruction.LAX, AddressingMode.INDIRECT_Y, 5),
     0xB7 to Opcode(Instruction.LAX, AddressingMode.ZERO_PAGE_Y, 4),
@@ -263,5 +265,17 @@ val opcodes = mapOf(
     0x73 to Opcode(Instruction.RRA, AddressingMode.INDIRECT_Y, 8),
     0x77 to Opcode(Instruction.RRA, AddressingMode.ZERO_PAGE_X, 6),
     0x7B to Opcode(Instruction.RRA, AddressingMode.ABSOLUTE_Y, 7),
-    0x7F to Opcode(Instruction.RRA, AddressingMode.ABSOLUTE_X, 7)
+    0x7F to Opcode(Instruction.RRA, AddressingMode.ABSOLUTE_X, 7),
+    0x02 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0x12 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0x22 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0x32 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0x42 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0x52 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0x62 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0x72 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0x92 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0xB2 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0xD2 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
+    0xF2 to Opcode(Instruction.HLT, AddressingMode.IMPLIED, 0),
 )
