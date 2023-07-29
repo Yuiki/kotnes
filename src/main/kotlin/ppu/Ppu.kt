@@ -262,10 +262,12 @@ class Ppu(
 
     private fun readVRam(): Int {
         val buf = vRamReadBuf
-        if (ppuAddr >= 0x2000) {
+        if (ppuAddr >= 0x2000) { // VRAM
             val addr = calcVRamAddr()
             ppuAddr += vRamOffset
-            if (addr >= 0x3F00) return vRam.read(addr)
+            if (addr >= 0x1F00) {
+                return palette.read(addr)
+            }
             vRamReadBuf = vRam.read(addr)
         } else {
             vRamReadBuf = chrRam.read(ppuAddr)

@@ -17,6 +17,10 @@ class PaletteRam {
                 }
             }.toIntArray()
 
+    fun read(addr: Int): Int {
+        return ram.read(calcPaletteAddr(addr))
+    }
+
     fun write(addr: Int, data: Int) {
         ram.write(calcPaletteAddr(addr), data)
     }
