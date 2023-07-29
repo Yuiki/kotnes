@@ -530,7 +530,8 @@ class Cpu(
             processNmi()
         }
         val pc = registers.pc
-        val opcode = opcodes[fetch(pc)] ?: throw UnknownOpcodeException()
+        val opKey = fetch(pc)
+        val opcode = opcodes[opKey] ?: throw UnknownOpcodeException(opKey = opKey)
         val (instruction, mode, cycle) = opcode
         val (operand, additionalCycle) = getOperand(mode)
         exec(instruction, mode, operand)
