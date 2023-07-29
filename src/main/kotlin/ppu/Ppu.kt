@@ -256,8 +256,12 @@ class Ppu(
                 data
             }
 
+            OAMDATA -> {
+                spriteRam.read(spriteRamAddr)
+            }
+
             PPUDATA -> readVRam()
-            else -> 0
+            else -> error("not supported address: $addr")
         }
 
     private fun readVRam(): Int {
