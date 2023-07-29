@@ -101,9 +101,11 @@ class Cpu(
         return read(0x100 + (registers.sp and 0xFF))
     }
 
-    private fun branch(addr: Int) {
+    private fun branch(addr: Int): Int {
         hasBranched = true
+        val additionalCycle = 1 + (addr and 0xFF00 != registers.pc and 0xFF00).toInt()
         registers.pc = addr
+        return additionalCycle
     }
 
     private fun pushStatus() {
@@ -127,9 +129,10 @@ class Cpu(
         registers.pc += pop() shl 8
     }
 
-    private fun exec(instruction: Instruction, mode: AddressingMode, operand: Int) {
+    private fun exec(instruction: Instruction, mode: AddressingMode, operand: Int): Int {
         hasBranched = false
 
+        var additionalCycle = 0
         when (instruction) {
             Instruction.ADC -> {
                 val data = if (mode == AddressingMode.IMMEDIATE) operand else read(operand)
@@ -242,14 +245,14 @@ class Cpu(
                 }
             }
 
-            Instruction.BCC -> if (!registers.c) branch(operand)
-            Instruction.BCS -> if (registers.c) branch(operand)
-            Instruction.BEQ -> if (registers.z) branch(operand)
-            Instruction.BNE -> if (!registers.z) branch(operand)
-            Instruction.BVC -> if (!registers.v) branch(operand)
-            Instruction.BVS -> if (registers.v) branch(operand)
-            Instruction.BPL -> if (!registers.n) branch(operand)
-            Instruction.BMI -> if (registers.n) branch(operand)
+            Instruction.BCC -> if (!registers.c) additionalCycle = branch(operand)
+            Instruction.BCS -> if (registers.c) additionalCycle = branch(operand)
+            Instruction.BEQ -> if (registers.z) additionalCycle = branch(operand)
+            Instruction.BNE -> if (!registers.z) additionalCycle = branch(operand)
+            Instruction.BVC -> if (!registers.v) additionalCycle = branch(operand)
+            Instruction.BVS -> if (registers.v) additionalCycle = branch(operand)
+            Instruction.BPL -> if (!registers.n) additionalCycle = branch(operand)
+            Instruction.BMI -> if (registers.n) additionalCycle = branch(operand)
             Instruction.BIT -> {
                 val data = read(operand)
                 registers.n = data and 0x80 != 0
@@ -272,7 +275,7 @@ class Cpu(
 
             Instruction.BRK -> {
                 if (registers.i) {
-                    return
+                    return 0
                 }
                 push((registers.pc shr 8) and 0xFF)
                 push(registers.pc and 0xFF)
@@ -513,6 +516,7 @@ class Cpu(
                 write(operand, data)
             }
         }
+        return additionalCycle
     }
 
     private fun processNmi() {
@@ -533,9 +537,9 @@ class Cpu(
         val opKey = fetch(pc)
         val opcode = opcodes[opKey] ?: throw UnknownOpcodeException(opKey = opKey)
         val (instruction, mode, cycle) = opcode
-        val (operand, additionalCycle) = getOperand(mode)
-        exec(instruction, mode, operand)
-        return cycle + additionalCycle + hasBranched.toInt()
+        val (operand, additionalCycle) = getOperand(opcode.mode)
+        val additionalCycle2 = exec(instruction, mode, operand)
+        return cycle + additionalCycle + additionalCycle2 + hasBranched.toInt()
     }
 
     companion object {

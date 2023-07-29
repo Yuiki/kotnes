@@ -265,7 +265,7 @@ class Ppu(
             }
 
             PPUDATA -> readVRam()
-            else -> error("not supported address: $addr")
+            else -> 0
         }
 
     private fun readVRam(): Int {
