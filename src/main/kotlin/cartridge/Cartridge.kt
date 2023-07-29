@@ -23,6 +23,8 @@ class Cartridge(rom: File) {
         val chrPage = romData.readAsInt(1)
         val prgSize = prgPage * PRG_PAGE_SIZE
         val chrSize = chrPage * CHR_PAGE_SIZE
+        println("PRG size: $prgSize")
+        println("CHR size: $chrSize")
         val flg6 = romData.readAsInt(1).toUByte()
         isHorizontalMirror = !flg6.isSetUByte(0u)
         mapper = flg6.extract(4..7)
