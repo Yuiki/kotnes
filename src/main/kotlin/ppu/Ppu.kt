@@ -11,7 +11,7 @@ class Ppu(
     private val interrupts: Interrupts,
     private val isHorizontalMirror: Boolean,
 ) {
-    private val vRam = Ram(0x2000)
+    private val vRam = PpuVRam()
     private val palette = PaletteRam()
 
     private var cycle = 0
@@ -269,10 +269,10 @@ class Ppu(
         if (ppuAddr >= 0x2000) { // VRAM
             val addr = calcVRamAddr()
             ppuAddr += vRamOffset
+            vRamReadBuf = vRam.read(addr)
             if (addr >= 0x1F00) {
                 return palette.read(addr)
             }
-            vRamReadBuf = vRam.read(addr)
         } else {
             vRamReadBuf = chrRam.read(ppuAddr)
             ppuAddr += vRamOffset
