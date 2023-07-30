@@ -9,6 +9,7 @@ import interrupts.Interrupts
 import pad.KeyEvent
 import pad.Pad
 import ppu.Canvas
+import ppu.ChrRam
 import ppu.Ppu
 import ram.Ram
 import kotlin.math.round
@@ -19,7 +20,7 @@ class Emulator(
     keyEvent: KeyEvent,
 ) {
     private val interrupts = Interrupts()
-    private val chrRam = Ram(cartridge.character.size).apply {
+    private val chrRam = ChrRam(if (cartridge.character.isNotEmpty()) cartridge.character.size else 0x2000).apply {
         cartridge.character.forEachIndexed { idx, data ->
             write(idx, data.toUnsignedInt())
         }

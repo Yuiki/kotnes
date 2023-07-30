@@ -6,7 +6,7 @@ import util.pairs
 import util.twoDim
 
 class Ppu(
-    private val chrRam: Ram,
+    private val chrRam: ChrRam,
     private val canvas: Canvas,
     private val interrupts: Interrupts,
     private val isHorizontalMirror: Boolean,
@@ -120,6 +120,10 @@ class Ppu(
         }
 
         return false
+    }
+
+    fun selectBank(bank: UByte) {
+        chrRam.bank = bank
     }
 
     private fun render() {

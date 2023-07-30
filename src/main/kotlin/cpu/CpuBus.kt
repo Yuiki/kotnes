@@ -1,6 +1,7 @@
 package cpu
 
 import apu.Apu
+import apu.extract
 import cartridge.Rom
 import dma.Dma
 import pad.Pad
@@ -37,6 +38,9 @@ class CpuBus(
             addr == 0x4014 -> dma.write(data)
             addr == 0x4016 -> pad.write(data)
             addr < 0x4020 -> apu.write(addr - 0x4000, data.toUByte())
+            addr in 0x8000..0xFFFE -> {
+                ppu.selectBank(data.toUByte().extract(0..1))
+            }
         }
     }
 }
