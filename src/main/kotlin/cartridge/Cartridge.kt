@@ -11,7 +11,7 @@ class Cartridge(rom: File) {
     val program: ByteArray
     val character: ByteArray
     val isHorizontalMirror: Boolean
-    private val mapper: UByte
+    val mapper: Mapper
 
     init {
         val romData = rom.inputStream()
@@ -27,8 +27,13 @@ class Cartridge(rom: File) {
         println("CHR size: $chrSize")
         val flg6 = romData.readAsInt(1).toUByte()
         isHorizontalMirror = !flg6.isSetUByte(0u)
-        mapper = flg6.extract(4..7)
-        println("Mapper: $mapper")
+        val mapperNo = flg6.extract(4..7)
+        mapper = when (mapperNo.toInt()) {
+            2 -> Mapper2()
+            3 -> Mapper3(romSize = prgSize)
+            else -> Mapper0(romSize = prgSize)
+        }
+        println("Mapper: $mapperNo")
         val flg7 = romData.readAsInt(1)
         val flg8 = romData.readAsInt(1)
         val flg9 = romData.readAsInt(1)

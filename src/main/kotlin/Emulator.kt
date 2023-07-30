@@ -54,7 +54,7 @@ class Emulator(
         speaker = Speaker(),
     )
     private val wRam = Ram(0x2048)
-    private val prgRom = Rom(cartridge.program)
+    private val prgRom = Rom(data = cartridge.program, mapper = cartridge.mapper)
     private val dma = Dma(ppu, wRam)
     private val pad = Pad(keyEvent)
 

@@ -22,11 +22,6 @@ class CpuBus(
             addr < 0x4000 -> ppu.read((addr - 0x2000) % 8)
             addr == 0x4015 -> apu.read(0x15)
             addr == 0x4016 -> pad.read()
-            addr >= 0xC000 -> {
-                val offset = -if (rom.size <= 0x4000) 0xC000 else 0x8000
-                rom.read(addr + offset)
-            }
-
             addr >= 0x8000 -> rom.read(addr - 0x8000)
             else -> 0
         }
@@ -39,6 +34,7 @@ class CpuBus(
             addr == 0x4016 -> pad.write(data)
             addr < 0x4020 -> apu.write(addr - 0x4000, data.toUByte())
             addr in 0x8000..0xFFFE -> {
+                rom.write(addr, data)
                 ppu.selectBank(data.toUByte().extract(0..1))
             }
         }
